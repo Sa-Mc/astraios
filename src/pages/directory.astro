@@ -1,0 +1,50 @@
+---
+import { readAll } from "../lib/markdoc/read";
+import { project } from "../lib/markdoc/frontmatter.schema";
+import PageLayout from "../layouts/PageLayout.astro";
+import PageMeta from "../components/PageMeta.astro";
+import { SITE_TITLE } from "../config";
+import BlogCard from "../components/BlogCard.astro";
+
+interface Frontmatter {
+    title: string;
+    pubDate: string;
+    description: string;
+}
+const projects = await readAll({
+    directory: "projects",
+    frontmatterSchema: project,
+});
+
+const sortedProjects = projects
+    .filter((p) => p.frontmatter.draft !== true)
+    .sort(
+        (a, b) =>
+            new Date(b.frontmatter.date).valueOf() -
+            new Date(a.frontmatter.date).valueOf()
+    );
+---
+
+<PageLayout>
+    <PageMeta title={`Projects | ${SITE_TITLE}`} slot="meta" />
+    <section slot="main">
+        <h1 class="sm:text-4xl text-3xl font-bold mb-6 dark:text-white">
+            Project Directory
+        </h1>
+        <p class="dark:text-zinc-300 mb-6">This is a directory of projects.</p>
+    </section>
+    <section>
+        <ul>
+            {
+                sortedProjects.map((project) => (
+                    <BlogCard
+                        title={project.frontmatter.title}
+                        description={project.frontmatter.description}
+                        pubDate={project.frontmatter.publicationDate}
+                        url={project.url}
+                    />
+                ))
+            }
+        </ul>
+    </section>
+</PageLayout>
